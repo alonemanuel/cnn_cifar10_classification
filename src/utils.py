@@ -23,3 +23,12 @@ def imshow(img):
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
+
+
+def get_loss(trained_model, dataloader, criterion):
+    inputs, labels = dataloader
+    outputs = trained_model(inputs)
+    loss = criterion(outputs, labels)
+    n_samples = dataloader.size()[0]
+    print(f'n_samples is: {n_samples}')
+    return loss
