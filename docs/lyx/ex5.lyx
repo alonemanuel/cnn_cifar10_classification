@@ -271,86 +271,107 @@ The non-linear components - the ReLU activations - allow the model to express
  a completely new set of functions.
 \end_layout
 
-\begin_layout Standard
-\begin_inset Note Note
-status open
-
-\begin_layout Plain Layout
-why did the deep linear model perform worse than the shallow?
-\end_layout
-
-\begin_layout Plain Layout
-understood in the test set due to overfitting, but how can this be possible
- in the train set?
-\end_layout
-
-\begin_layout Plain Layout
-it has more power, how did it do that?
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-20 conv1 120 fc1 240 fc1
-\end_layout
-
-\begin_layout Enumerate
-nonlin 
-\end_layout
-
-\begin_layout Enumerate
-train 1.1355821559378505
-\end_layout
-
-\begin_layout Enumerate
-test 1.194156339147687
-\end_layout
-
-\begin_layout Standard
-lin
-\end_layout
-
-\begin_layout Standard
-train 1.2240295984584093
-\end_layout
-
-\begin_layout Standard
-test 1.2695638348668814
-\end_layout
-
-\begin_layout Standard
-big lin
-\end_layout
-
-\begin_layout Standard
-train 1.2715280068361758
-\end_layout
-
-\begin_layout Standard
-test 1.3144673219695688
-\end_layout
-
-\begin_layout Standard
-big linear
-\end_layout
-
-\begin_layout Standard
-train loss: 1.23104951982975 test loss: 1.2680032145798206
-\end_layout
-
-\begin_layout Standard
-linear
-\end_layout
-
-\begin_layout Standard
-train loss: 1.2651844253891706 test loss: 1.3193395183444023
-\end_layout
-
 \begin_layout Subsection
 Locality of the Receptive Field
+\end_layout
+
+\begin_layout Itemize
+Why larger filters don't help us test? maybe because it is still local?
+\end_layout
+
+\begin_layout Itemize
+maybe because the net can train its weights to not focus on the edges? that
+ is, small filters are a private case of big filters
+\end_layout
+
+\begin_layout Itemize
+When training the network on images with reshuffled pixels, we get a dramatic
+ decrease in performance.
+ 
+\end_layout
+
+\begin_layout Itemize
+When trained with the same network parameters as in the previous section,
+ we get the following results:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Original images:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.0736
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.13435
+\end_layout
+
+\begin_layout Itemize
+Test accuracy: 60.14
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Shuffled images:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.5758
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.6138
+\end_layout
+
+\begin_layout Itemize
+Test accuracy: 41.19
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+I think this is the case since shuffled images deem the convolutional filters
+ unusable.
+ Or in other words - the underlying premise for the convolutional layers
+ to work - is the locality of the receptive field.
+\end_layout
+
+\begin_layout Itemize
+Conv.
+ filters give a 
+\begin_inset Quotes eld
+\end_inset
+
+score
+\begin_inset Quotes erd
+\end_inset
+
+ to local area of the image (e.g.
+ a 5x5 crop), based on how much that area/crop fits the filter, or doesn't
+ fit.
+\end_layout
+
+\begin_layout Itemize
+For instance, some conv.
+ filters check for edges in a given crop of an image.
+ Once these pixels are shuffeled, there is no meaningful notion of 
+\begin_inset Quotes eld
+\end_inset
+
+edge
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Itemize
+Thus, the failure of the network is 
 \end_layout
 
 \begin_layout Subsection

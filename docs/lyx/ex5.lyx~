@@ -197,11 +197,11 @@ Non-linear model (with ReLU activations):
 
 \begin_deeper
 \begin_layout Itemize
-Train loss: 
+Train loss: 1.1437
 \end_layout
 
 \begin_layout Itemize
-Test loss:
+Test loss: 1.2066
 \end_layout
 
 \end_deeper
@@ -215,11 +215,11 @@ Linear model (without activation, and with
 
 \begin_deeper
 \begin_layout Itemize
-Train loss:
+Train loss: 1.2391
 \end_layout
 
 \begin_layout Itemize
-Test loss:
+Test loss: 1.2825
 \end_layout
 
 \end_deeper
@@ -240,11 +240,11 @@ Deeper
 
 \begin_deeper
 \begin_layout Itemize
-Train loss:
+Train loss: 1.2119
 \end_layout
 
 \begin_layout Itemize
-Test loss:
+Test loss: 1.2571
 \end_layout
 
 \end_deeper

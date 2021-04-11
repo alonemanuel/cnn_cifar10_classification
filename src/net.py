@@ -26,7 +26,7 @@ class Net(nn.Module):
 
         n_filters = self.conv1.out_channels
         n_filters += self.conv2.out_channels
-        # what's considered a neuron?
+        # what's condsidered a neuron?
         # n_filters += self.fc1x
         return n_filters
 

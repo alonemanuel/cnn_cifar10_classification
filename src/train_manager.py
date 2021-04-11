@@ -4,6 +4,7 @@ import torch
 from tqdm import tqdm
 
 from src.net import Net
+from src.utils import imshow
 
 N_EPOCHS = 2
 MODEL_DIR = os.path.join('.', 'saved_models')
@@ -26,7 +27,7 @@ class TrainManager:
 
     def train(self):
         print(f'training model...')
-        for epoch in tqdm(range(N_EPOCHS), position=0, leave=True):
+        for j, epoch in enumerate(tqdm(range(N_EPOCHS), position=0, leave=True)):
             epoch_running_loss = 0.0
             running_loss = 0.0
             for i, data in enumerate(tqdm(self.trainloader, position=0, leave=True), 0):
@@ -47,6 +48,9 @@ class TrainManager:
                 epoch_running_loss += loss.item()
                 # print every 2000 mini-batches
                 if i % 2000 == 1999:
+                    print(inputs[0].size())
+                    imshow(inputs[0].to('cpu'))
+
                     print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
                     running_loss = 0.0
             self.train_losses_by_epoch.append(epoch_running_loss / len(self.trainloader))
@@ -84,23 +88,30 @@ class TrainManager:
     def get_loss(self, data_loader):
         print(f'getting loss...')
         # todo: is the test loss just the average over all batches?
+        correct = 0
+        total = 0
         running_loss = 0.0
-        for i, data in enumerate(tqdm(data_loader, leave=True, position=0), 0):
-            # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = [data[i].to(self.device) for i in [0, 1]]
-            outputs = self.model(inputs)
-            loss = self.criterion(outputs, labels)
-            running_loss += loss.item()
+        with torch.no_grad():
+            for i, data in enumerate(tqdm(data_loader, leave=True, position=0), 0):
+                # get the inputs; data is a list of [inputs, labels]
+                inputs, labels = [data[i].to(self.device) for i in [0, 1]]
+                outputs = self.model(inputs)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+                loss = self.criterion(outputs, labels)
+                running_loss += loss.item()
 
         n_batches = len(data_loader)
         avg_loss = running_loss / n_batches
-        print(f'loss is {avg_loss}')
-        return avg_loss
+        accuracy = 100 * correct / total
+        print(f'loss is {avg_loss}, accuracy is: {accuracy}')
+        return avg_loss, accuracy
 
     def get_losses(self):
-        train_loss = self.get_loss(self.trainloader)
-        test_loss = self.get_loss(self.testloader)
-        return train_loss, test_loss
+        train_loss, train_accuracy = self.get_loss(self.trainloader)
+        test_loss, test_accuracy = self.get_loss(self.testloader)
+        return (train_loss, train_accuracy), (test_loss, test_accuracy)
 
     def init_model(self, model: Net, optimizer):
         self.model = model

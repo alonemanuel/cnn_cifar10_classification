@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,7 +9,6 @@ from src.data_manager import DataManager
 from src.net import Net
 from src.plotter import Plotter
 from src.train_manager import TrainManager
-
 
 
 @dataclass
@@ -21,7 +21,8 @@ class NetInfo:
 
 def main():
     # fine_tune_model()
-    test_non_linearities()
+    # test_non_linearities()
+    test_locality_of_receptive_field()
 
 
 def fine_tune_model():
@@ -71,6 +72,25 @@ def test_non_linearities():
         print(f'train loss: {train_loss}\ntest loss: {test_loss}')
 
 
+def test_locality_of_receptive_field():
+    print(f'testing locality of receptive field...')
+
+    noshuffle_data_manager = DataManager(should_shuffle_images=False)
+    shuffled_data_manager = DataManager(should_shuffle_images=True)
+
+    for name, data_manager in [('no_shuffle', noshuffle_data_manager), ('shuffle', shuffled_data_manager)]:
+        print(f'\ntesting {name}...')
+        train_manager = get_train_manager(data_manager)
+        net = Net()
+        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+        train_manager.init_model(net, optimizer)
+        train_manager.train()
+        print(f'\ntesting local field...')
+        train_res, test_res = train_manager.get_losses()
+        print(f'train loss: {train_res[0]}, train accuracy: {train_res[1]}\n'
+              f'test loss: {test_res[0]}, test accuracy: {test_res[1]}')
+
+
 def get_train_manager(data_manager: DataManager):
     trainloader, testloader, classes = data_manager.load_cifar10()
 
@@ -89,11 +109,27 @@ def load_model(train_manager: TrainManager):
 
 
 def sandbox():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    np_arr = np.array([[[[1, 2],
+                         [3, 4]],
+                        [[5, 6],
+                         [7, 8]]],
+                       [[[1, 3], [4, 6]], [[2, 5], [7, 9]]]])
+    print(np_arr.shape)
+    batch = torch.from_numpy(np_arr)
+    print(batch)
+    print(batch.size())
+    batch = torch.reshape(batch, (2, 2, 4))
+    print(batch.size())
+    print(batch)
 
-    # Assuming that we are on a CUDA machine, this should print a CUDA device:
-
-    print(device)
+    r = torch.randperm(4)
+    # c = torch.randperm(2)
+    print()
+    shuff_batch = batch[:, :, r]
+    print(shuff_batch)
+    # print(shuff_batch[:, :, 1])
+    shuff_batch = torch.reshape(shuff_batch, (2, 2, 2, 2))
+    print(shuff_batch)
 
 
 if __name__ == '__main__':
