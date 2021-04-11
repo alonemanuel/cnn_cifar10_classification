@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+from random import shuffle
 
 import numpy as np
-import torch
 import torch.nn as nn
 import torch.optim as optim
 
@@ -20,12 +20,14 @@ class NetInfo:
 
 
 def main():
-    # fine_tune_model()
+    fine_tune_model()
     # test_non_linearities()
-    test_locality_of_receptive_field()
+    # test_locality_of_receptive_field()
+    # test_no_spatial_structure()
 
 
 def fine_tune_model():
+    print(f'\n\nfine tuning model...')
     data_manager = DataManager()
 
     plotter = Plotter()
@@ -34,13 +36,13 @@ def fine_tune_model():
     n_filters_list = []
     train_losses, test_losses = [], []
     for i in range(1, 11):
-        n_filters = 2 * i
+        n_filters = 4 * i
         net = Net(conv1_out_channels=n_filters)
         optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
 
         train_manager.init_model(net, optimizer)
         train_and_save_model(train_manager)
-        train_loss, test_loss = train_manager.get_losses()
+        (train_loss, train_accuracy), (test_loss, test_accuracy) = train_manager.get_losses()
         n_filters_list.append(n_filters)
         train_losses.append(train_loss)
         test_losses.append(test_loss)
@@ -75,8 +77,8 @@ def test_non_linearities():
 def test_locality_of_receptive_field():
     print(f'testing locality of receptive field...')
 
-    noshuffle_data_manager = DataManager(should_shuffle_images=False)
-    shuffled_data_manager = DataManager(should_shuffle_images=True)
+    noshuffle_data_manager = DataManager(shuffle_type='none')
+    shuffled_data_manager = DataManager(shuffle_type='fixed')
 
     for name, data_manager in [('no_shuffle', noshuffle_data_manager), ('shuffle', shuffled_data_manager)]:
         print(f'\ntesting {name}...')
@@ -86,6 +88,25 @@ def test_locality_of_receptive_field():
         train_manager.init_model(net, optimizer)
         train_manager.train()
         print(f'\ntesting local field...')
+        train_res, test_res = train_manager.get_losses()
+        print(f'train loss: {train_res[0]}, train accuracy: {train_res[1]}\n'
+              f'test loss: {test_res[0]}, test accuracy: {test_res[1]}')
+
+
+def test_no_spatial_structure():
+    print(f'testing no spatial structure...')
+    fixed_shuffle_data_manager = DataManager(shuffle_type='fixed')
+    fresh_shuffle_data_manager = DataManager(shuffle_type='fresh')
+
+    for name, data_manager in [('fixed_shuffle', fixed_shuffle_data_manager),
+                               ('fresh_shuffle', fresh_shuffle_data_manager)]:
+        print(f'\ntesting {name}...')
+        train_manager = get_train_manager(data_manager)
+        net = Net()
+        optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9)
+        train_manager.init_model(net, optimizer)
+        train_manager.train()
+        print(f'\ntesting no spatial...')
         train_res, test_res = train_manager.get_losses()
         print(f'train loss: {train_res[0]}, train accuracy: {train_res[1]}\n'
               f'test loss: {test_res[0]}, test accuracy: {test_res[1]}')
@@ -109,27 +130,15 @@ def load_model(train_manager: TrainManager):
 
 
 def sandbox():
-    np_arr = np.array([[[[1, 2],
-                         [3, 4]],
-                        [[5, 6],
-                         [7, 8]]],
-                       [[[1, 3], [4, 6]], [[2, 5], [7, 9]]]])
-    print(np_arr.shape)
-    batch = torch.from_numpy(np_arr)
-    print(batch)
-    print(batch.size())
-    batch = torch.reshape(batch, (2, 2, 4))
-    print(batch.size())
-    print(batch)
-
-    r = torch.randperm(4)
-    # c = torch.randperm(2)
-    print()
-    shuff_batch = batch[:, :, r]
-    print(shuff_batch)
-    # print(shuff_batch[:, :, 1])
-    shuff_batch = torch.reshape(shuff_batch, (2, 2, 2, 2))
-    print(shuff_batch)
+    print(f'sandboxing...')
+    # n_filters = list(range(1,11))
+    n_filters=[1,3,65,76,423,675,934,2345,13444,52345]
+    # n_filters = shuffle(n_filters)
+    n_filters = np.array(n_filters)
+    loss_train = np.array(list(range(10))) * 2
+    loss_test = np.array(list(range(10))) * 3
+    plotter = Plotter()
+    plotter.plot_filters_losses(n_filters, loss_train, loss_test)
 
 
 if __name__ == '__main__':

@@ -8,15 +8,15 @@ N_PIXELS = 1024
 
 class DataManager:
 
-    def __init__(self, should_shuffle_images=False):
-        self.should_shuffle_images = should_shuffle_images
-        self.r = torch.randperm(N_PIXELS)
+    def __init__(self, shuffle_type='none'):
+        self.shuffle_type = shuffle_type
+        self.fixed_perm = torch.randperm(N_PIXELS)
 
     def load_cifar10(self):
         transform = transforms.Compose(
             [transforms.ToTensor(),
              transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-             transforms.Lambda(self.shuffle_images if self.should_shuffle_images else identity)])
+             transforms.Lambda(identity if self.shuffle_type == 'none' else self.shuffle_images)])
         trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
         trainloader = torch.utils.data.DataLoader(trainset, batch_size=4, shuffle=True, num_workers=2)
         testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
@@ -32,7 +32,11 @@ class DataManager:
         # print(f'x reshaped size: {x.size()}')
         n = x.size()[-1]
         # print(f'n: {n}')
-        shuffled_x = x[:, self.r]
+        if self.shuffle_type == 'fresh':
+            perm = torch.randperm(N_PIXELS)
+        else:
+            perm = self.fixed_perm
+        shuffled_x = x[:, perm]
         # print(f'shuffled x: {shuffled_x}')
         x = torch.reshape(shuffled_x, (3, 32, 32))
         return x

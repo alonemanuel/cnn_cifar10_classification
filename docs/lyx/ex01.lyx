@@ -1,0 +1,965 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\use_default_options true
+\begin_modules
+customHeadersFooters
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "lmodern" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize a4paper
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\rightmargin 3cm
+\bottommargin 0cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle fancy
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+NN for Images Ex1 - HUJI
+\end_layout
+
+\begin_layout Author
+Alon Emanuel
+\end_layout
+
+\begin_layout Standard
+\begin_inset FormulaMacro
+\newcommand{\addelta}{\text{Add}-\delta}
+{\text{Add}-\delta}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\mle}{\text{MLE}}
+{\text{MLE}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\count}{\text{COUNT}}
+{\text{COUNT}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\comdots}{,\dots,}
+{,\dots,}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\stop}{\text{STOP}}
+{\text{STOP}}
+\end_inset
+
+
+\begin_inset FormulaMacro
+\newcommand{\eqq}[1]{\overset{\left[#1\right]}{=}}
+{\overset{\left[#1\right]}{=}}
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Programming Task
+\end_layout
+
+\begin_layout Subsection
+Architecture Fine-Tuning
+\end_layout
+
+\begin_layout Itemize
+To fine-tune our network architecture, we've ran the following procedure:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+We trained 10 different networks, each with a 
+\series bold
+different number of filters
+\series default
+.
+\end_layout
+
+\begin_layout Itemize
+For each network, we saved the train and test losses, and plotted them as
+ a function of the number of filters (see comment about notation below),
+ to see which settings resulted in the best performance.
+\end_layout
+
+\begin_layout Itemize
+The change in the number of filters was done by 
+\series bold
+changing the depth of the first convolutional layer
+\series default
+ (having it use less or more types of filters = having it output less or
+ more channels).
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+As can be seen in the plots, making the network too complex resulted in
+ 
+\series bold
+overfitting
+\series default
+, while making it too simple resulted in 
+\series bold
+underfitting
+\series default
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Graphics
+	filename fine_tuning.jpg
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Note: the number of filters shown in the 
+\begin_inset Formula $x$
+\end_inset
+
+-axis is notational only.
+ The number of filters was in fact 
+\begin_inset Formula $n\_conv1+n\_conv2+n\_fc1+n\_fc2$
+\end_inset
+
+ , where 
+\begin_inset Formula $n\_conv1$
+\end_inset
+
+ is the number of filters in the first convolutional layer.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+This number is given by the formula 
+\begin_inset Formula $32\cdot32\cdot out\_channels$
+\end_inset
+
+.
+ We fiddled with the 
+\begin_inset Formula $out\_channels$
+\end_inset
+
+ parameter, and those are represented by the numbers that appear in the
+ 
+\begin_inset Formula $x$
+\end_inset
+
+-axis in the plot above.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+With the 
+\begin_inset Formula $conv1$
+\end_inset
+
+ output channels set to 
+\begin_inset Formula $36$
+\end_inset
+
+, we seem to get the best performance
+\series default
+, with the train loss being 
+\begin_inset Formula $\approx0.9$
+\end_inset
+
+ and the test loss being 
+\begin_inset Formula $\approx1.13$
+\end_inset
+
+.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The bump at 
+\begin_inset Formula $28$
+\end_inset
+
+ seems like an outlier and doesn't correspond to the expected bias-variance
+ 
+\begin_inset Formula $U$
+\end_inset
+
+-curve.
+\end_layout
+
+\end_deeper
+\begin_layout Subsection
+Linear Model
+\end_layout
+
+\begin_layout Itemize
+After removing the non-linear components, the performance of the net 
+\series bold
+decreased drastically.
+\end_layout
+
+\begin_layout Itemize
+The components 
+\series bold
+include all the neuron activations
+\series default
+ used in this architecture.
+ More specifically, the ReLU activation was removed, and the original neuron
+ emissions remained the same.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Note that as the 
+\begin_inset Formula $maxpool$
+\end_inset
+
+ layers are in fact non-linear, we chose to omit these from our test to
+ put our focus on the main essence of the question (as opposed to removing
+ the pooling layers and getting a completely different architecture).
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The results were as follows:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\series bold
+Non-linear model
+\series default
+ (with ReLU activations):
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.1437
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.2066
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+Linear model
+\series default
+ (without activation, and with 
+\begin_inset Formula $120$
+\end_inset
+
+ neurons in the first FC layer):
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.2391
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.2825
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+\begin_inset Quotes eld
+\end_inset
+
+Deeper
+\begin_inset Quotes erd
+\end_inset
+
+ linear model
+\series default
+ (without activation, and with 
+\begin_inset Formula $240$
+\end_inset
+
+ neurons in the first FC layer):
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.2119
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.2571
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+The big decrease in performance of the linear model is due to its 
+\series bold
+lack of expressiveness power.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Since all layers in the linear model - convolutional, pooling and FC - are
+ in fact linear operators, 
+\series bold
+they can all be chained together to create one linear operator
+\series default
+ that'll perform the same operation.
+\end_layout
+
+\begin_layout Itemize
+That is, the number of filters and depth of the linear model doesn't have
+ much effect after a certain point, since the expressive power can always
+ be reduced to one single matrix multiplication.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+The non-linear components - the ReLU activations - 
+\series bold
+allow the model to express a completely new set of functions
+\series default
+, that can't be expressed-by or reduced to a simple matrix operation.
+\end_layout
+
+\begin_layout Subsection
+Locality of the Receptive Field
+\end_layout
+
+\begin_layout Itemize
+Simply using larger filters won't help us test this aspect, since 
+\series bold
+larger filters are simply a generalization of smaller filters
+\series default
+ - in the context of nerual networks.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+This is due to the fact that while its training phase, the network can still
+ update the filters' parameters to encode higher frequencies (smaller receptive
+ fields).
+\end_layout
+
+\begin_layout Itemize
+This can be done by 
+\begin_inset Quotes eld
+\end_inset
+
+centering
+\begin_inset Quotes erd
+\end_inset
+
+ the filter's parameters and padding its edges.
+\end_layout
+
+\begin_layout Itemize
+By doing so, the network is not much different that a network with smaller
+ kernels, thus the test is deemed unseccusful.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+When training the network on images with reshuffled pixels, we get a dramatic
+ decrease in performance.
+ 
+\end_layout
+
+\begin_layout Itemize
+When trained with the same network parameters as in the previous section,
+ we get the following results:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+
+\series bold
+Original images
+\series default
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.0736
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.13435
+\end_layout
+
+\begin_layout Itemize
+Test accuracy: 60.14
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+
+\series bold
+Shuffled images
+\series default
+:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.5758
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.6138
+\end_layout
+
+\begin_layout Itemize
+Test accuracy: 41.19
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+I think this is the case since shuffled images deem the convolutional filters
+ unusable.
+ Or in other words - the underlying premise for the convolutional layers
+ to work - is the locality of the receptive field.
+\end_layout
+
+\begin_layout Itemize
+Conv.
+ filters give a 
+\begin_inset Quotes eld
+\end_inset
+
+score
+\begin_inset Quotes erd
+\end_inset
+
+ to local area of the image (e.g.
+ a 5x5 crop), based on how much that area/crop fits the filter, or doesn't
+ fit.
+\end_layout
+
+\begin_layout Itemize
+For instance, some conv.
+ filters check for edges in a given crop of an image.
+ Once these pixels are shuffled, there is no meaningful notion of 
+\begin_inset Quotes eld
+\end_inset
+
+edge
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Itemize
+Thus, 
+\series bold
+the network is 
+\begin_inset Quotes eld
+\end_inset
+
+reduced
+\begin_inset Quotes erd
+\end_inset
+
+ to its last FC layers
+\series default
+, who aren't affected by the shuffling of the images.
+ This is due to its non-local nature.
+ This is the reason we see results that are not purely random (a random
+ net will have 10% accuracy).
+\end_layout
+
+\begin_layout Subsection
+No Spatial Structure
+\end_layout
+
+\begin_layout Itemize
+Following the instructions, we've completely broke the image's structure,
+ and compared the net's performance against the fixed-structured net:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Net trained on images with 
+\series bold
+fixed 
+\series default
+permutations:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.5348
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.5681
+\end_layout
+
+\begin_layout Itemize
+Test accuracy: 42.86
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Net trained on images with 
+\series bold
+fresh 
+\series default
+permutations:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Train loss: 1.9208
+\end_layout
+
+\begin_layout Itemize
+Test loss: 1.9142
+\end_layout
+
+\begin_layout Itemize
+Test accuracy: 27.21
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Itemize
+This result isn't surprising.
+ The fixed permutations allowed the FC layers to 
+\begin_inset Quotes eld
+\end_inset
+
+do their magic
+\begin_inset Quotes erd
+\end_inset
+
+, but now when the permutations are freshly sampled with each image, even
+ they can't work.
+\end_layout
+
+\begin_layout Itemize
+We still get a better-than-random result, and my explanation will become
+ clear once we look at the per-class results.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+The per-class accuracies
+\series default
+, taken from the test set, are as follows:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Accuracy of plane : 55 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of car : 11 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of bird : 4 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of cat : 11 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of deer : 45 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of dog : 0 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of frog : 15 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of horse : 53 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of ship : 24 % 
+\end_layout
+
+\begin_layout Itemize
+Accuracy of truck : 51 %
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+As we can see, the plane, deer, horse and truck classes 
+\series bold
+did exceptionally well
+\series default
+, while bird, car, cat and dog failed miserably.
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Images of planes, for example, share similar histograms - as the plane is
+ usually white, and is photographed with a blue sky background.
+\end_layout
+
+\begin_layout Itemize
+The same goes for deer and horses (beige-brown over a green background)
+ and probably for trucks, as they're usually white.
+\end_layout
+
+\begin_layout Itemize
+On the other hand - dogs, cats, birds and cars come in a variety of colors,
+ and usually have changing backgrounds.
+ 
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+This information about 
+\series bold
+consistent histograms is invariant to translations
+\series default
+ and is obviously not local (but it should be noted that local histograms
+ can be useful heuristics), and can be captured by the network, as weights
+ get updated to reflect color distributions.
+\end_layout
+
+\begin_layout Section
+Theoretical Questions
+\end_layout
+
+\begin_layout Subsection*
+Q1
+\end_layout
+
+\begin_layout Itemize
+We need to provide some function 
+\begin_inset Formula $f$
+\end_inset
+
+, such that 
+\begin_inset Formula 
+\[
+L\left[x\left(t\right)\right]\equiv\left(x*f\right)\left(t\right)
+\]
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Itemize
+First, recall the definition of a 1D convolution:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Formula 
+\[
+c\left[y\right]=x\left[y\right]*h\left[y\right]=\sum_{k=-\infty}^{\infty}x\left[k\right]\cdot h\left[y-k\right]
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+First, lets decompose 
+\begin_inset Formula $x\left[t\right]$
+\end_inset
+
+ into a weighted sum of translated delta functions:
+\begin_inset Formula 
+\[
+x\left[t\right]=\sum_{k=-\infty}^{\infty}x\left[k\right]\cdot\delta\left(t-k\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+Now lets plug this into 
+\begin_inset Formula $L$
+\end_inset
+
+:
+\begin_inset Formula 
+\begin{align*}
+L\left[x\left(t\right)\right]\left(y\right)= & L\left[\sum_{k=-\infty}^{\infty}x\left(k\right)\cdot\delta\left(t-k\right)\right]\left(y\right)\\
+\eqq 1 & \sum_{k=-\infty}^{\infty}L\left[x\left(k\right)\cdot\delta\left(t-k\right)\right]\left(y\right)\\
+\eqq 1 & \sum_{k=-\infty}^{\infty}x\left(k\right)\cdot L\left[\delta\left(t-k\right)\right]\left(y\right)\\
+\eqq 2 & \sum_{k=-\infty}^{\infty}x\left(k\right)\cdot L\left[\delta\left(t\right)\right]\left(y-k\right)
+\end{align*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+\begin_inset Formula $\left[1\right]$
+\end_inset
+
+: from 
+\begin_inset Formula $L$
+\end_inset
+
+'s linearity,
+\end_layout
+
+\begin_layout Itemize
+\begin_inset Formula $\left[2\right]$
+\end_inset
+
+: from the assumption over 
+\begin_inset Formula $L$
+\end_inset
+
+.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+When assigning 
+\begin_inset Formula $f\left(t\right)\equiv L\left(\delta\left(t\right)\right) ,$
+\end_inset
+
+
+\series bold
+we get the desired result
+\series default
+, showing that 
+\begin_inset Formula $L$
+\end_inset
+
+ corresponds to a convolution:
+\begin_inset Formula 
+\[
+L\left[x\left(t\right)\right]\left(y\right)=\sum_{k=-\infty}^{\infty}x\left(k\right)\cdot f\left(y-k\right)=\left(x*f\right)\left(y\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+Q2
+\end_layout
+
+\begin_layout Itemize
+The order of the resulting 1D vector is unimportant.
+\end_layout
+
+\begin_layout Itemize
+This is due to the fact that a FC takes into account 
+\series bold
+all connections between the previous layer
+\series default
+ (the reshaped activation map) and the output layer.
+ 
+\end_layout
+
+\begin_layout Itemize
+Thus, a neuron in the 2D activation map can be in any position, and the
+ weights given to the edges going out of that neuron will change appropriately.
+\end_layout
+
+\begin_layout Subsection*
+Q3.a
+\end_layout
+
+\begin_layout Itemize
+The ReLU activation function 
+\series bold
+is not LTI
+\series default
+, and can be easily shown with the following example:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+Given a neuron 
+\begin_inset Formula $n_{1}$
+\end_inset
+
+ with emission set to 
+\begin_inset Formula $1$
+\end_inset
+
+, and given a ReLU activation layer, we get:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Formula 
+\[
+ReLU\left(\left(-1\right)\cdot n_{1}\right)=\text{ReLU}\left(\left(-1\right)\cdot1\right)=\text{0\ensuremath{\ne-1=\left(-1\right)\cdot\text{ReLU}\left(1\right)=\left(-1\right)\cdot\text{ReLU}\left(n_{1}\right)}}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout Subsection*
+Q3.b
+\end_layout
+
+\begin_layout Itemize
+The strided pooling layer 
+\series bold
+is not LTI
+\series default
+.
+\end_layout
+
+\begin_layout Itemize
+To show this, we'll compare it to the translation-invariant (yet not necessarily
+ linear) maxpooling layer:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Graphics
+	filename G:/My Drive/school/year4/semester1/67103_nn_for_images/cnn_cifar10_classification/docs/illustrator/Asset 2.png
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+As can be seen, the maxpool layer kept the same features of the letter 'c',
+ even after it was translated.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+In contrast, the strided pooling gave a completely different result, when
+ the letter was moved by 
+\begin_inset Formula $2$
+\end_inset
+
+ pixels:
+\end_layout
+
+\begin_deeper
+\begin_layout Standard
+\begin_inset Graphics
+	filename G:/My Drive/school/year4/semester1/67103_nn_for_images/cnn_cifar10_classification/docs/illustrator/Asset 3.png
+	scale 30
+
+\end_inset
+
+
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Obviously this is a toy example, but it gets the idea across.
+\end_layout
+
+\end_body
+\end_document
